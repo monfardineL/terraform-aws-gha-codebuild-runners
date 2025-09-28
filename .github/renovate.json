@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "schedule:weekends"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["terraform-provider"],
+      "groupName": "terraform providers",
+      "automerge": false,
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchDatasources": ["github-actions"],
+      "groupName": "github actions",
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchPackageNames": ["hashicorp/terraform"],
+      "groupName": "terraform",
+      "automerge": false,
+      "rangeStrategy": "bump"
+    }
+  ],
+  "terraform": {
+    "ignorePaths": [
+      "examples/**"
+    ]
+  },
+  "labels": ["dependencies"],
+  "assignees": ["@monfardineL"],
+  "reviewers": ["@monfardineL"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps"
+}
