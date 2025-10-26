@@ -39,3 +39,5 @@ terraform.rc
 
 # Terraform lock files (include them in version control for reproducible builds)
 !.terraform.lock.hcl
+
+tmp/

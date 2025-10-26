@@ -1,112 +1,42 @@
-variable "project_name" {
-  description = "Name of the CodeBuild project"
+variable "org_name" {
   type        = string
+  description = "The name of the GitHub organization where the CodeBuild runners will be used."
 }
 
-variable "github_repo" {
-  description = "GitHub repository URL"
-  type        = string
-}
-
-variable "github_token_secret_name" {
-  description = "Name of the AWS Secrets Manager secret containing the GitHub token"
-  type        = string
-}
-
-variable "buildspec_file" {
-  description = "Path to the buildspec file in the repository"
-  type        = string
-  default     = "buildspec.yml"
-}
-
-variable "compute_type" {
-  description = "CodeBuild compute type"
-  type        = string
-  default     = "BUILD_GENERAL1_SMALL"
-
-  validation {
-    condition = contains([
-      "BUILD_GENERAL1_SMALL",
-      "BUILD_GENERAL1_MEDIUM",
-      "BUILD_GENERAL1_LARGE",
-      "BUILD_GENERAL1_2XLARGE"
-    ], var.compute_type)
-    error_message = "Compute type must be one of: BUILD_GENERAL1_SMALL, BUILD_GENERAL1_MEDIUM, BUILD_GENERAL1_LARGE, BUILD_GENERAL1_2XLARGE."
-  }
-}
-
-variable "environment_image" {
-  description = "Docker image to use for the build environment"
-  type        = string
-  default     = "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
-}
-
-variable "privileged_mode" {
-  description = "Enable privileged mode for Docker builds"
+variable "create_iam_policy" {
   type        = bool
-  default     = false
+  default     = true
+  description = "If the module should create the IAM Policy for the CodeBuild project. If false, you must provide the policy ARN via the 'codebuild_iam_policy_arn' variable. Default is true."
 }
 
-variable "timeout" {
-  description = "Build timeout in minutes"
-  type        = number
-  default     = 60
+variable "codebuild_iam_policy_arn" {
+  type        = string
+  default     = ""
+  description = "The ARN of the IAM Policy to attach to the CodeBuild project's role. Only required if 'create_iam_policy' is false."
 
   validation {
-    condition     = var.timeout >= 5 && var.timeout <= 480
-    error_message = "Timeout must be between 5 and 480 minutes."
+    condition     = var.create_iam_policy || var.codebuild_iam_policy_arn != ""
+    error_message = "The codebuild_iam_policy_arn variable must be provided when create_iam_policy is false."
   }
 }
 
-variable "environment_variables" {
-  description = "Environment variables for the build"
-  type = list(object({
-    name  = string
-    value = string
-    type  = optional(string, "PLAINTEXT")
+variable "codestar_connection_name" {
+  type        = string
+  default     = ""
+  description = "The name for a new CodeStar connection to create. Mutually exclusive with 'codestar_connection_arn'."
+}
+
+variable "codestar_connection_arn" {
+  type        = string
+  default     = ""
+  description = "The ARN of an existing CodeStar Connection to use for GitHub authentication. Mutually exclusive with 'codestar_connection_name'."
+}
+
+variable "runners" {
+  type = map(object({
+    compute_type = optional(string, "BUILD_GENERAL1_SMALL")
+    image        = optional(string, "aws/codebuild/amazonlinux-aarch64-standard:3.0")
+    type         = optional(string, "ARM_CONTAINER")
   }))
-  default = []
-}
-
-variable "artifacts_location" {
-  description = "S3 bucket for storing build artifacts"
-  type        = string
-  default     = ""
-}
-
-variable "cache_type" {
-  description = "Cache type for CodeBuild project"
-  type        = string
-  default     = "NO_CACHE"
-
-  validation {
-    condition = contains([
-      "NO_CACHE",
-      "S3",
-      "LOCAL"
-    ], var.cache_type)
-    error_message = "Cache type must be one of: NO_CACHE, S3, LOCAL."
-  }
-}
-
-variable "cache_location" {
-  description = "S3 bucket for caching (required if cache_type is S3)"
-  type        = string
-  default     = ""
-}
-
-variable "vpc_config" {
-  description = "VPC configuration for CodeBuild project"
-  type = object({
-    vpc_id             = string
-    subnets            = list(string)
-    security_group_ids = list(string)
-  })
-  default = null
-}
-
-variable "tags" {
-  description = "Tags to apply to all resources"
-  type        = map(string)
-  default     = {}
+  description = "A map of runner configurations keyed by repository name, each specifying compute type, image, and environment type. Repository name is the map key."
 }

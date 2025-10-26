@@ -1,101 +1,32 @@
-# AWS CodeBuild Runner for GitHub Actions - Terraform Module
+# AWS CodeBuild Runner for GitHub Actions
 
 [![CI](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/ci.yml/badge.svg)](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/ci.yml)
 [![Release](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/release.yml/badge.svg)](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/release.yml)
 
 This Terraform module creates AWS CodeBuild projects that can be used as runners for GitHub Actions workflows. It provides a secure and scalable way to run your CI/CD pipelines on AWS infrastructure while maintaining tight integration with your GitHub repositories.
 
-## Features
-
-- 🚀 **Easy Setup**: Simple Terraform module to deploy CodeBuild projects
-- 🔒 **Secure**: Uses AWS Secrets Manager for GitHub token storage
-- 🌐 **VPC Support**: Optional VPC configuration for network isolation
-- 📦 **Artifact Storage**: S3 integration for build artifacts and caching
-- 🏷️ **Flexible Tagging**: Comprehensive tagging support
-- ⚡ **Multiple Compute Types**: Support for various CodeBuild compute sizes
-- 🔧 **Environment Variables**: Easy configuration of build environment
-
 ## Usage
 
 ### Basic Example
 
 ```hcl
-module "codebuild_github_runner" {
-  source = "monfardineL/gha-codebuild-runner-tf/aws"
+  module "codebuild-runners" {
+    source = "monfardineL/terraform-aws-gha-codebuild-runners"
 
-  project_name               = "my-github-runner"
-  github_repo               = "https://github.com/your-org/your-repo.git"
-  github_token_secret_name  = "github-token-secret"
-  
-  tags = {
-    Environment = "production"
-    Project     = "github-runner"
-  }
-}
-```
-
-### Advanced Example with VPC and S3
-
-```hcl
-module "codebuild_github_runner" {
-  source = "monfardineL/gha-codebuild-runner-tf/aws"
-
-  project_name               = "advanced-github-runner"
-  github_repo               = "https://github.com/your-org/your-repo.git"
-  github_token_secret_name  = "github-token-secret"
-  
-  # Advanced configuration
-  compute_type      = "BUILD_GENERAL1_MEDIUM"
-  privileged_mode   = true
-  timeout           = 120
-  
-  # S3 configuration
-  artifacts_location = "my-artifacts-bucket"
-  cache_type         = "S3"
-  cache_location     = "my-cache-bucket"
-  
-  # VPC configuration
-  vpc_config = {
-    vpc_id             = "vpc-12345678"
-    subnets            = ["subnet-12345678", "subnet-87654321"]
-    security_group_ids = ["sg-12345678"]
-  }
-  
-  # Environment variables
-  environment_variables = [
-    {
-      name  = "NODE_ENV"
-      value = "production"
+    org_name          = "myorg"
+    create_iam_policy = true
+    codestar_connection_name = "github-myorg"
+    #codestar_connection_arn = ""
+    runners = {
+      "aws_account_setup" = {
+      }
     }
-  ]
-  
-  tags = {
-    Environment = "production"
-    Project     = "github-runner"
   }
-}
 ```
 
-## Prerequisites
+### IAM Policy
 
-1. **GitHub Token**: Create a GitHub personal access token with appropriate permissions and store it in AWS Secrets Manager
-2. **AWS Permissions**: Ensure your AWS credentials have permissions to create CodeBuild projects, IAM roles, and access Secrets Manager
-3. **S3 Buckets**: If using S3 for artifacts or caching, ensure the buckets exist or create them separately
-
-## Setting up GitHub Token
-
-1. Create a GitHub personal access token with the following scopes:
-   - `repo` (for private repositories)
-   - `public_repo` (for public repositories)
-   - `admin:repo_hook` (for webhooks)
-
-2. Store the token in AWS Secrets Manager:
-   ```bash
-   aws secretsmanager create-secret \
-     --name "github-token-for-codebuild" \
-     --description "GitHub token for CodeBuild" \
-     --secret-string "your-github-token-here"
-   ```
+to-do
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -160,9 +91,6 @@ No modules.
 ## Examples
 
 See the [examples](./examples/) directory for complete working examples:
-
-- [Basic Example](./examples/basic/) - Simple CodeBuild runner setup
-- [Advanced Example](./examples/advanced/) - Full-featured setup with VPC, S3, and advanced configuration
 
 ## Contributing
 
