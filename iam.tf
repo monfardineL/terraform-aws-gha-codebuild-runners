@@ -18,6 +18,12 @@ resource "aws_iam_role" "codebuild_service_role" {
 }
 
 resource "aws_iam_role_policy" "codebuild_service_policy" {
+  #checkov:skip=CKV2_AWS_40: We need permission to create IAM roles and policies
+  #checkov:skip=CKV_AWS_286: We need full access to manage account resources
+  #checkov:skip=CKV_AWS_287: We need to be able to create, modify and delete every kind of resource
+  #checkov:skip=CKV_AWS_288: This is a side effect of the full access needed
+  #checkov:skip=CKV_AWS_289: We need permission to create IAM roles and policies
+  #checkov:skip=CKV_AWS_355: We need full access to manage account resources
   count = var.create_iam_policy ? 1 : 0
 
   name = "codebuild-gha-service-policy"
@@ -89,6 +95,11 @@ resource "aws_iam_role_policy" "codebuild_service_policy" {
           "xray:*"
         ]
         Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:PrincipalServiceName" = "codebuild.amazonaws.com"
+          }
+        }
       }
     ]
   })

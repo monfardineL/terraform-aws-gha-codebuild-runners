@@ -16,7 +16,7 @@ resource "aws_codebuild_project" "github_runner" {
     image                       = each.value.image
     type                        = each.value.type
     image_pull_credentials_type = "CODEBUILD"
-
+    #checkov:skip=CKV_AWS_316:Privileged mode is required for building docker images
     privileged_mode = true
 
   }
