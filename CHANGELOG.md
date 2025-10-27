@@ -1,3 +1,16 @@
+# 1.0.0 (2025-10-27)
+
+
+### Bug Fixes
+
+* **ci:** remove validate examples ([9c49d32](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/commit/9c49d321ccf0b6adff8fc66f7b6a61605a45e100))
+* **CI:** update terraform version ([f7d6445](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/commit/f7d64450bdc79ab685a1a63502e68fb035c5bad1))
+
+
+### Features
+
+* Add complete Terraform module structure with CI/CD and Renovate ([79592c8](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/commit/79592c8a92efaf6f4e0119e04abb05e6cc7f1018))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
