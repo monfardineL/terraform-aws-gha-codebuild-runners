@@ -100,6 +100,18 @@ resource "aws_iam_role_policy" "codebuild_service_policy" {
             "aws:PrincipalServiceName" = "codebuild.amazonaws.com"
           }
         }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codestar-connections:UseConnection",
+          "codestar-connections:GetConnectionToken",
+          "codestar-connections:PassConnection",
+          "codeconnections:UseConnection",
+          "codeconnections:GetConnectionToken",
+          "codeconnections:PassConnection"
+        ]
+        Resource = "*"
       }
     ]
   })
