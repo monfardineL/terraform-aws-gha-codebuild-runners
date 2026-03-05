@@ -94,7 +94,7 @@ No modules.
 | <a name="input_codestar_connection_name"></a> [codestar\_connection\_name](#input\_codestar\_connection\_name) | The name for a new CodeStar connection to create. Mutually exclusive with 'codestar\_connection\_arn'. | `string` | `""` | no |
 | <a name="input_create_iam_policy"></a> [create\_iam\_policy](#input\_create\_iam\_policy) | If the module should create the IAM Policy for the CodeBuild project. If false, you must provide the policy ARN via the 'codebuild\_iam\_policy\_arn' variable. Default is true. | `bool` | `true` | no |
 | <a name="input_org_name"></a> [org\_name](#input\_org\_name) | The name of the GitHub organization where the CodeBuild runners will be used. | `string` | n/a | yes |
-| <a name="input_runners"></a> [runners](#input\_runners) | A map of runner configurations keyed by repository name, each specifying compute type, image, and environment type. Repository name is the map key. | <pre>map(object({<br/>    compute_type = optional(string, "BUILD_GENERAL1_SMALL")<br/>    image        = optional(string, "aws/codebuild/amazonlinux-aarch64-standard:3.0")<br/>    type         = optional(string, "ARM_CONTAINER")<br/>  }))</pre> | n/a | yes |
+| <a name="input_runners"></a> [runners](#input\_runners) | A map of runner configurations keyed by repository name, each specifying compute type, image, and environment type. Repository name is the map key. | <pre>map(object({<br>    compute_type = optional(string, "BUILD_GENERAL1_SMALL")<br>    image        = optional(string, "aws/codebuild/amazonlinux-aarch64-standard:3.0")<br>    type         = optional(string, "ARM_CONTAINER")<br>  }))</pre> | n/a | yes |
 
 ## Outputs
 
