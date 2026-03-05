@@ -7,6 +7,8 @@ resource "aws_codebuild_project" "github_runner" {
   build_timeout          = "120"
   concurrent_build_limit = 5
 
+  depends_on = [aws_codebuild_source_credential.codeconnection_credentials]
+
   artifacts {
     type = "NO_ARTIFACTS"
   }
@@ -28,11 +30,6 @@ resource "aws_codebuild_project" "github_runner" {
 
     git_submodules_config {
       fetch_submodules = true
-    }
-
-    auth {
-      type     = "CODECONNECTIONS"
-      resource = var.codestar_connection_name != "" ? aws_codestarconnections_connection.github[0].arn : var.codestar_connection_arn
     }
   }
 

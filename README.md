@@ -1,7 +1,7 @@
 # AWS CodeBuild Runner for GitHub Actions
 
-[![CI](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/ci.yml/badge.svg)](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/ci.yml)
-[![Release](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/release.yml/badge.svg)](https://github.com/monfardineL/gha-codebuild-runner-tf/actions/workflows/release.yml)
+[![CI](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/actions/workflows/ci.yaml/badge.svg)](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/actions/workflows/ci.yaml)
+[![Release](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/actions/workflows/release.yaml/badge.svg)](https://github.com/monfardineL/terraform-aws-gha-codebuild-runners/actions/workflows/release.yaml)
 
 This Terraform module creates AWS CodeBuild projects that can be used as runners for GitHub Actions workflows. It provides a secure and scalable way to run your CI/CD pipelines on AWS infrastructure while maintaining tight integration with your GitHub repositories.
 
@@ -10,37 +10,65 @@ This Terraform module creates AWS CodeBuild projects that can be used as runners
 ### Basic Example
 
 ```hcl
-  module "codebuild-runners" {
-    source = "monfardineL/terraform-aws-gha-codebuild-runners"
+module "codebuild-runners" {
+  source  = "monfardineL/gha-codebuild-runners/aws"
+  version = "~> 1.0"
 
-    org_name          = "myorg"
-    create_iam_policy = true
-    codestar_connection_name = "github-myorg"
-    #codestar_connection_arn = ""
-    runners = {
-      "aws_account_setup" = {
-      }
+  org_name                 = "myorg"
+  create_iam_policy        = true
+  codestar_connection_name = "github-myorg"
+
+  runners = {
+    "my-repo" = {
+      compute_type = "BUILD_GENERAL1_SMALL"
+      image        = "aws/codebuild/amazonlinux-aarch64-standard:3.0"
+      type         = "ARM_CONTAINER"
     }
   }
+}
 ```
 
 ### IAM Policy
 
-to-do
+By default, the module creates an IAM role with broad permissions to allow CodeBuild runners to manage AWS resources (useful for infrastructure-as-code pipelines like Terraform). This behavior is controlled by the `create_iam_policy` variable:
+
+- **`create_iam_policy = true`** (default): Creates a service role with extensive permissions including EC2, S3, IAM, Lambda, ECS, and many other AWS services. This is suitable for runners that need to deploy infrastructure.
+
+- **`create_iam_policy = false`**: Skips IAM role creation. You must provide your own IAM role ARN via `codebuild_iam_policy_arn`. Use this when you need fine-grained access control:
+
+```hcl
+module "codebuild-runners" {
+  source  = "monfardineL/gha-codebuild-runners/aws"
+  version = "~> 1.0"
+
+  org_name                 = "myorg"
+  create_iam_policy        = false
+  codebuild_iam_policy_arn = aws_iam_role.custom_codebuild_role.arn
+  codestar_connection_name = "github-myorg"
+
+  runners = {
+    "my-app" = {}
+  }
+}
+```
+
+> **⚠️ Security Note**: The default IAM policy grants extensive permissions. For production use, consider providing a custom role with least-privilege permissions tailored to your specific pipeline needs.
 
 <!-- BEGIN_TF_DOCS -->
+
+
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.18 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.18.0 |
 
 ## Modules
 
@@ -51,41 +79,31 @@ No modules.
 | Name | Type |
 |------|------|
 | [aws_codebuild_project.github_runner](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_project) | resource |
-| [aws_iam_role.codebuild_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy.codebuild_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
-| [aws_iam_role_policy.codebuild_s3_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
-| [aws_iam_role_policy.codebuild_vpc_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
-| [aws_secretsmanager_secret.github_token](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
-| [aws_secretsmanager_secret_version.github_token](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
+| [aws_codebuild_source_credential.codeconnection_credentials](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_source_credential) | resource |
+| [aws_codebuild_webhook.github_webhook](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_webhook) | resource |
+| [aws_codestarconnections_connection.github](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codestarconnections_connection) | resource |
+| [aws_iam_role.codebuild_service_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.codebuild_service_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_artifacts_location"></a> [artifacts\_location](#input\_artifacts\_location) | S3 bucket for storing build artifacts | `string` | `""` | no |
-| <a name="input_buildspec_file"></a> [buildspec\_file](#input\_buildspec\_file) | Path to the buildspec file in the repository | `string` | `"buildspec.yml"` | no |
-| <a name="input_cache_location"></a> [cache\_location](#input\_cache\_location) | S3 bucket for caching (required if cache\_type is S3) | `string` | `""` | no |
-| <a name="input_cache_type"></a> [cache\_type](#input\_cache\_type) | Cache type for CodeBuild project | `string` | `"NO_CACHE"` | no |
-| <a name="input_compute_type"></a> [compute\_type](#input\_compute\_type) | CodeBuild compute type | `string` | `"BUILD_GENERAL1_SMALL"` | no |
-| <a name="input_environment_image"></a> [environment\_image](#input\_environment\_image) | Docker image to use for the build environment | `string` | `"aws/codebuild/amazonlinux2-x86_64-standard:4.0"` | no |
-| <a name="input_environment_variables"></a> [environment\_variables](#input\_environment\_variables) | Environment variables for the build | <pre>list(object({<br>    name  = string<br>    value = string<br>    type  = optional(string, "PLAINTEXT")<br>  }))</pre> | `[]` | no |
-| <a name="input_github_repo"></a> [github\_repo](#input\_github\_repo) | GitHub repository URL | `string` | n/a | yes |
-| <a name="input_github_token_secret_name"></a> [github\_token\_secret\_name](#input\_github\_token\_secret\_name) | Name of the AWS Secrets Manager secret containing the GitHub token | `string` | n/a | yes |
-| <a name="input_privileged_mode"></a> [privileged\_mode](#input\_privileged\_mode) | Enable privileged mode for Docker builds | `bool` | `false` | no |
-| <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Name of the CodeBuild project | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources | `map(string)` | `{}` | no |
-| <a name="input_timeout"></a> [timeout](#input\_timeout) | Build timeout in minutes | `number` | `60` | no |
-| <a name="input_vpc_config"></a> [vpc\_config](#input\_vpc\_config) | VPC configuration for CodeBuild project | <pre>object({<br>    vpc_id              = string<br>    subnets             = list(string)<br>    security_group_ids  = list(string)<br>  })</pre> | `null` | no |
+| <a name="input_codebuild_iam_policy_arn"></a> [codebuild\_iam\_policy\_arn](#input\_codebuild\_iam\_policy\_arn) | The ARN of the IAM Policy to attach to the CodeBuild project's role. Only required if 'create\_iam\_policy' is false. | `string` | `""` | no |
+| <a name="input_codestar_connection_arn"></a> [codestar\_connection\_arn](#input\_codestar\_connection\_arn) | The ARN of an existing CodeStar Connection to use for GitHub authentication. Mutually exclusive with 'codestar\_connection\_name'. | `string` | `""` | no |
+| <a name="input_codestar_connection_name"></a> [codestar\_connection\_name](#input\_codestar\_connection\_name) | The name for a new CodeStar connection to create. Mutually exclusive with 'codestar\_connection\_arn'. | `string` | `""` | no |
+| <a name="input_create_iam_policy"></a> [create\_iam\_policy](#input\_create\_iam\_policy) | If the module should create the IAM Policy for the CodeBuild project. If false, you must provide the policy ARN via the 'codebuild\_iam\_policy\_arn' variable. Default is true. | `bool` | `true` | no |
+| <a name="input_org_name"></a> [org\_name](#input\_org\_name) | The name of the GitHub organization where the CodeBuild runners will be used. | `string` | n/a | yes |
+| <a name="input_runners"></a> [runners](#input\_runners) | A map of runner configurations keyed by repository name, each specifying compute type, image, and environment type. Repository name is the map key. | <pre>map(object({<br/>    compute_type = optional(string, "BUILD_GENERAL1_SMALL")<br/>    image        = optional(string, "aws/codebuild/amazonlinux-aarch64-standard:3.0")<br/>    type         = optional(string, "ARM_CONTAINER")<br/>  }))</pre> | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_codebuild_project_arn"></a> [codebuild\_project\_arn](#output\_codebuild\_project\_arn) | ARN of the CodeBuild project |
-| <a name="output_codebuild_project_id"></a> [codebuild\_project\_id](#output\_codebuild\_project\_id) | ID of the CodeBuild project |
-| <a name="output_codebuild_project_name"></a> [codebuild\_project\_name](#output\_codebuild\_project\_name) | Name of the CodeBuild project |
-| <a name="output_codebuild_service_role_arn"></a> [codebuild\_service\_role\_arn](#output\_codebuild\_service\_role\_arn) | ARN of the CodeBuild service role |
-| <a name="output_codebuild_service_role_name"></a> [codebuild\_service\_role\_name](#output\_codebuild\_service\_role\_name) | Name of the CodeBuild service role |
+| <a name="output_codebuild_project_arns"></a> [codebuild\_project\_arns](#output\_codebuild\_project\_arns) | Map of CodeBuild project ARNs keyed by repository name |
+| <a name="output_codebuild_project_names"></a> [codebuild\_project\_names](#output\_codebuild\_project\_names) | Map of CodeBuild project names keyed by repository name |
+| <a name="output_codestar_connection_arn"></a> [codestar\_connection\_arn](#output\_codestar\_connection\_arn) | The ARN of the CodeStar connection (either created or provided) |
+| <a name="output_codestar_connection_status"></a> [codestar\_connection\_status](#output\_codestar\_connection\_status) | The status of the CodeStar connection (only available for created connections) |
 <!-- END_TF_DOCS -->
 
 ## Examples

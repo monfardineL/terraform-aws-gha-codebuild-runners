@@ -7,3 +7,13 @@ output "codestar_connection_status" {
   description = "The status of the CodeStar connection (only available for created connections)"
   value       = var.codestar_connection_name != "" ? aws_codestarconnections_connection.github[0].connection_status : null
 }
+
+output "codebuild_project_arns" {
+  description = "Map of CodeBuild project ARNs keyed by repository name"
+  value       = { for k, v in aws_codebuild_project.github_runner : k => v.arn }
+}
+
+output "codebuild_project_names" {
+  description = "Map of CodeBuild project names keyed by repository name"
+  value       = { for k, v in aws_codebuild_project.github_runner : k => v.name }
+}
