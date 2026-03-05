@@ -95,11 +95,6 @@ resource "aws_iam_role_policy" "codebuild_service_policy" {
           "xray:*"
         ]
         Resource = "*"
-        Condition = {
-          StringEquals = {
-            "aws:PrincipalServiceName" = "codebuild.amazonaws.com"
-          }
-        }
       },
       {
         Effect = "Allow"
